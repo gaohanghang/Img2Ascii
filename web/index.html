@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图片转换字符画</title>
+    <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="css/style.css">
+    <link type="text/css" rel="stylesheet" href="css/index.css" />
+</head>
+</head>
+<body>
+<h2>图片转换字符画</h2>
+<br/>
+<br>
+    <ul>
+        <li>选择前景和背景颜色分明的图片以保证转换效果</li>
+        <li>必须是JPG|GIF|PNG格式</li>
+        <li>大小不要超过1M</li>
+    </ul>
+    <br>
+    <div id="juzhong">
+        <label id="userimg" style="border-style: dashed;">
+            <img  id="touxiang" src="images/file.png" style="display: inline-block;margin-top: 20px"><br>
+            <input type="hidden" id="img" name="uploadImg"/>
+            <input type="file" id="uploadImg" onchange="selectImg(this);" accept="image/*" style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;"/>
+        </label>
+        <p style="font-size: 0.6em">请选择图片</p>
+        <br>
+        <figure id="waiting">
+            <section><div></div></section>
+            <section><div></div></section>
+            <section><div></div></section>
+            <section><div></div></section>
+            <section><div></div></section>
+            <section><div></div></section>
+            <section><div></div></section>
+            <section><div></div></section>
+        </figure>
+        <a id="gaitubao" href="http://www.gaitubao.com/">您可以考虑：图片瘦身</a>
+        <img id="ASCII">
+    </div>
+
+<script src="js/hullabaloo.js"></script>
+<script src="js/prefixfree.min.js"></script>
+<script>
+    //获取hullabaloo对象
+    $.hulla = new hullabaloo();
+    //页面初始化时waiting隐藏,改图宝隐藏
+    (function(){
+        $("#waiting").hide();
+        $("#gaitubao").hide();
+    })();
+    //定义image
+    var image = '';
+    var base64;//将canvas压缩为base64格式
+    //选择图片函数
+    function selectImg(file) {
+        if (!file.files || !file.files[0]){
+            return;
+        }
+        $("#gaitubao").show();
+        //获取文件后缀并比较
+        var index = file.value.lastIndexOf(".");
+        var ext = file.value.substr(index+1);
+        ext = ext.toLowerCase();
+        var lastindex;
+        if(ext==="gif")
+        {
+            lastindex="gif";
+        }
+        else if(ext==="png"){
+            lastindex="jpeg";
+        }
+        else if(ext==="jpg"||ext==="jpeg"){
+            lastindex="jpeg";
+        }
+        else{
+            $("#warning").text("只支持 jpg | png | gif 格式的图片！");
+            return;
+        }
+        //判断文件大小是否超过5M
+        var maxsize = 5*1024*1024;//5M
+        var filesize = $("#uploadImg")[0].files[0].size;
+        filesize_M=(filesize/(1024*1024)).toFixed(2);
+        if (filesize>maxsize){
+            $.hulla.send("大小不能超过1M<br>当前文件:"+filesize_M+"M", 'warning');
+            //$("#warning").text("图片大小不能超过1M，当前文件大小:"+filesize_M+"M");
+            $("#gaitubao").show();
+            return;
+        }
+
+        //文件读取
+        var reader = new FileReader();//读取文件
+        reader.onload = function(event){//文件读取完成的回调函数
+            image = document.getElementById('touxiang');
+            image.src = event.target.result;//读入文件的base64数据(可直接作为src属性来显示图片)
+            //图片读取完成的回调函数（必须加上否则数据读入不完整导致出错！）
+            image.onload = function(){
+                base64=event.target.result;
+
+                $("#waiting").show();
+                $.ajax({
+                    url:"UploadImg",
+                    type:"POST",
+                    data:{image:base64,lastname:lastindex},
+                    timeout:10000,
+                    dataType:"json",
+                    success:function(data){
+                        var success = data.success;
+                        if(success==="图片上传成功！"){
+                            var code = data.imgcode;
+                            $.hulla.send("转换成功！<br>图片代码:"+code, "success");
+                            $("#ASCII").attr("src","/asciiimg/"+code+"."+lastindex);
+                            $("#gaitubao").hide();
+                        }
+                        else{
+                            $.hulla.send(success, 'warning');
+                            $("#gaitubao").show();
+                        }
+                        $("#waiting").hide();
+                    },
+                    error:function(){
+                        $.hulla.send('图片转换超时!', 'warning');
+                        $("#gaitubao").show();
+                        $("#waiting").hide();
+                    },
+                });
+            }
+        }
+        //将文件已Data URL的形式读入页面
+        reader.readAsDataURL(file.files[0]);
+    }
+</script>
+<script type="text/javascript" src="js/index.js"></script>
+</body>
+</html>
