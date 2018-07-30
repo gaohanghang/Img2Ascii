@@ -85,7 +85,7 @@
         var filesize = $("#uploadImg")[0].files[0].size;
         filesize_M=(filesize/(1024*1024)).toFixed(2);
         if (filesize>maxsize){
-            $.hulla.send("大小不能超过1M<br>当前文件:"+filesize_M+"M", 'warning');
+            $.hulla.send("大小不能超过5M<br>当前文件:"+filesize_M+"M", 'warning');
             //$("#warning").text("图片大小不能超过1M，当前文件大小:"+filesize_M+"M");
             $("#gaitubao").show();
             return;
