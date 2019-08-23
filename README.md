@@ -5,8 +5,6 @@
 
 原始项目来自 https://github.com/QixinLi/Img2Ascii
 
-[演示地址](http://140.143.53.118:8080/IMG2ASCII/)
-
 项目运行需要在C盘建立IMG2ASCII文件夹
 IMG2ASCII下有asciiimg、out、uploadimg 文件夹
 
